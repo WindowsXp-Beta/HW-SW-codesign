@@ -1,0 +1,3 @@
+[submodule "lab2A/scale-sim-v2"]
+	path = lab2A/scale-sim-v2
+	url = https://github.com/scalesim-project/scale-sim-v2.git

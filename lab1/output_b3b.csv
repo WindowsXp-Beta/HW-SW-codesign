@@ -1,0 +1,2 @@
+Op Type,Dimension,Bound,C/M ratio,Op Intensity,Latency (msec),Cycles,Num ops (MFLOP),Input_a (MB),Input_w (MB),Output (MB),Total Data (MB),Throughput (Tflops),Compute Cycles,Memory Cycles
+GEMM,"[1, 4096, 1024, 6144]",C,1.1325542741433277,1445.5294117647059,0.43766805306157114,479246.5181024204,51535.413248,24.0,6.0,4.0,34.0,117.75,479246.5181024204,423155.45404208195
