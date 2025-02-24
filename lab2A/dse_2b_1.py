@@ -15,18 +15,19 @@ ifmap_sram_range = range(5, 11)
 filter_sram_range = range(5, 11)
 ofmap_sram_range = range(5, 11)
 dataflow_options = ["ws", "os", "is"]
-bandwidth_range = range(1, 6)
+# bandwidth_range = range(1, 6)
+bandwidth = 5
 
 cycle_col_name = " Total Cycles"
 map_eff_col_name = " Mapping Efficiency %"
 
 
 def run_simulation(args):
-    ah, aw, dfw = args
-    results = {"names": [], "objective1": [], "objective2": []}
+    ah, aw = args
+    results = {"names": [], "total_cycles": [], "avg_map_eff": [], "objective1": [], "objective2": []}
 
-    for ifs, fs, ofs, bdw in itertools.product(
-        ifmap_sram_range, filter_sram_range, ofmap_sram_range, bandwidth_range
+    for ifs, fs, ofs, dfw in itertools.product(
+        ifmap_sram_range, filter_sram_range, ofmap_sram_range, dataflow_options
     ):
         run_uuid = str(uuid.uuid4())  # Generate unique ID
         run_name = f"lenet_DSE_run_{run_uuid}"
@@ -44,7 +45,7 @@ def run_simulation(args):
         template_config["architecture_presets"]["FilterSramSzkB"] = str(fs)
         template_config["architecture_presets"]["OfmapSramSzkB"] = str(ofs)
         template_config["architecture_presets"]["Dataflow"] = dfw
-        template_config["architecture_presets"]["Bandwidth"] = str(bdw)
+        template_config["architecture_presets"]["Bandwidth"] = str(bandwidth)
 
         # Write updated configuration file
         with open(config_dir / cfg_filename, "w") as configfile:
@@ -53,7 +54,7 @@ def run_simulation(args):
         # Run scale-sim commands
         subprocess.run(
             [
-                "/global/homes/h/hxu398/.conda/envs/pyro-slam/bin/python",
+                "/home/hice1/xwei303/.conda/envs/hml/bin/python",
                 "scale-sim-v2/scalesim/scale.py",
                 "-c",
                 str(config_dir / cfg_filename),
@@ -68,7 +69,7 @@ def run_simulation(args):
         )
         subprocess.run(
             [
-                "/global/homes/h/hxu398/.conda/envs/pyro-slam/bin/python",
+                "/home/hice1/xwei303/.conda/envs/hml/bin/python",
                 "scale-sim-v2/scalesim/scale.py",
                 "-c",
                 str(config_dir / cfg_filename),
@@ -110,6 +111,8 @@ def run_simulation(args):
 
             # Store results
             results["names"].append(cfg_filename)
+            results["total_cycles"].append(total_cycles)
+            results["avg_map_eff"].append(avg_mapping_efficiency)
             results["objective1"].append(objective1)
             results["objective2"].append(objective2)
         else:
@@ -121,18 +124,20 @@ def run_simulation(args):
 if __name__ == "__main__":
     with Pool() as pool:
         all_results = pool.map(
-            run_simulation, itertools.product(array_height_range, array_width_range, dataflow_options)
+            run_simulation, itertools.product(array_height_range, array_width_range)
         )
 
     # Merge results
     final_results = {"names": [], "objective1": [], "objective2": []}
     for res in all_results:
         final_results["names"].extend(res["names"])
+        final_results["total_cycles"].extend(res["total_cycles"])
+        final_results["avg_map_eff"].extend(res["avg_map_eff"])
         final_results["objective1"].extend(res["objective1"])
         final_results["objective2"].extend(res["objective2"])
 
     # Save results to CSV
-    output_csv = "dse_results.csv"
+    output_csv = "dse_results_2b_1.csv"
     df_results = pd.DataFrame(final_results)
     df_results.to_csv(output_csv, index=False)
 
